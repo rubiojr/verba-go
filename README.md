@@ -1,6 +1,13 @@
 # Buscador de telediarios de RTVE
 
-Este proyecto es un buscador de telediarios de RTVE.
+Este proyecto pretende ser un buscador de telediarios de RTVE y una re-implementación del API [Verba](https://verba.civio.es) en Go, simplificando el stack.
+
+- Un solo binario para el despliegue.
+- Sin necesidad de una base de datos externa o Elasticsearch.
+
+El objetivo es mantener la compatibilidad con la API original y añadir nuevas funcionalidades.
+
+Por ahora, el proyecto es un trabajo en progreso y el API server no se ha publicado todavía.
 
 El contenido de los telediarios se obtiene de la web [Civio](https://verba.civio.es) y se almacena en una base de datos SQLite.
 
