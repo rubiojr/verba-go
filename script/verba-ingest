@@ -1,0 +1,32 @@
+#!/usr/bin/env -S risor --
+import sql
+import os
+import json
+
+db := sql.connect('sqlite://verba.db')
+db.exec("PRAGMA foreign_keys=ON")
+db.exec(`PRAGMA journal_mode=WAL`)
+
+programmes := json.unmarshal(os.read_file(filepath.join(getenv("HOME"), "civio/verba/programmes/programmes.json")))
+programmes.each(func(p) {
+  db.exec(
+    `INSERT INTO programmes (id, title, date) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET title=title`,
+    p.id, p.title, p.date,
+  )
+  true
+})
+
+transcripts_base := filepath.join(getenv("HOME"), "/home/rubiojr/Documents/civio/verba/transcripts/")
+transcripts := ls(transcripts_base).each(func(it){
+  if !it.name.has_suffix(".json") {
+    return
+  }
+
+  json.unmarshal(os.read_file(filepath.join(transcripts_base, it.name))).each(func(t) {
+    db.exec(
+      `INSERT INTO transcripts (transcript_id, content, programme_id, link, time_start, time_end) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET content=content`,
+      t.id, t.content, int(t.programme.id), t.link, t.time_start, t.time_end,
+    )
+    true
+  })
+})

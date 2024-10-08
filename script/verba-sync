@@ -1,0 +1,67 @@
+#!/usr/bin/env -S rsx eval
+import sql
+import os
+import json
+import verba
+from cli import app, command as c
+import rsx
+
+func main(dbfile) {
+  if !rsx.is_file(dbfile) {
+    print('Database file "{dbfile}" does not exist')
+    return
+  }
+
+  db := sql.connect('sqlite://'+dbfile)
+  db.exec("PRAGMA foreign_keys=ON")
+  db.exec(`PRAGMA journal_mode=WAL`)
+
+  programmes := verba.programmes()
+  count := 0
+  programmes.each(func(p) {
+    count++
+    rows := db.query(`SELECT * from sync where programme_id = ?`, p.id)
+    if len(rows) == 0 {
+      print('Syncing new programme [{count}/{len(programmes)}] {p.id} ({p.date})...')
+      db.exec(
+        `INSERT INTO programmes (id, title, date) VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET title=title`,
+        p.id, p.title, p.date,
+      )
+
+      print('Syncing transcriptions...')
+      transcription := verba.transcription(p.id)
+      transcription.each(func(t) {
+        db.exec(
+          `INSERT INTO transcripts (transcript_id, content, programme_id, link, time_start, time_end) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(transcript_id) DO UPDATE SET content=content`,
+          t.id, t.content, int(t.programme.id), t.link, t.time_start, t.time_end,
+        )
+      })
+
+      db.exec(
+        `INSERT INTO sync (programme_id, date) VALUES (?, ?)`,
+        p.id, p.date,
+      )
+    } else {
+      print('Programme {p.id} ({p.date}) already synced')
+    }
+    true
+  })
+}
+
+app({
+  name: "verba-sync",
+  description: "Sync conent from verba.civio.es",
+  flags: [
+    cli.flag({
+      name: "db",
+      type: "string",
+    }),
+  ],
+  action: func(ctx) {
+    if ctx.string("db") == "" {
+      print("Missing --db flag")
+      return
+    }
+    main(ctx.string("db"))
+  }
+}).run()

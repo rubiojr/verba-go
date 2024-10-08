@@ -1,0 +1,27 @@
+/*
+ * verba.civio.es client library.
+*/
+
+const _VERBA_URL = "https://verba.civio.es/api"
+
+func _get(path, opts) {
+  return fetch(_VERBA_URL + path, opts)
+}
+
+func programmes() {
+  resp := _get("/fetchProgrammeList", {})
+  if resp.status_code != 200 {
+    error("error fetching programmes")
+  }
+
+  return resp.json()
+}
+
+func transcription(programme_id) {
+  resp := _get("/fetchProgrammeTranscription", {params: {programme_id: programme_id}})
+  if resp.status_code != 200 {
+    error("error fetching transcription")
+  }
+
+  return resp.json()
+}

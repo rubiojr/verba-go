@@ -1,0 +1,71 @@
+#!/usr/bin/env -S rsx eval
+import sql
+import os
+import json
+import rsx
+from cli import app, command as c
+
+func main(dbfile) {
+  db := sql.connect('sqlite://{dbfile}')
+  db.exec("PRAGMA foreign_keys=ON")
+  db.exec(`PRAGMA journal_mode=WAL`)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS programmes (
+      id INTEGER PRIMARY KEY,
+      title TEXT,
+      date DATETIME
+    )
+  `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS sync (
+      id INTEGER PRIMARY KEY,
+      programme_id TEXT,
+      date DATETIME
+    )
+  `)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS transcripts (
+      id INTEGER PRIMARY KEY,
+      transcript_id TEXT NOT NULL,
+      programme_id INTEGER,
+      content TEXT,
+      link TEXT,
+      time_start INTEGER,
+      time_end INTEGER,
+      FOREIGN KEY(programme_id) REFERENCES programmes(id)
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS transcriptididx ON transcripts(transcript_id);
+    CREATE VIRTUAL TABLE IF NOT EXISTS tidx USING fts5(id UNINDEXED, content);
+
+    CREATE TRIGGER IF NOT EXISTS transcript_insert AFTER INSERT ON transcripts BEGIN
+      INSERT INTO
+        tidx (id, content)
+      VALUES
+        (new.rowid, new.content);
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS transcript_delete AFTER DELETE ON transcripts BEGIN
+      DELETE FROM tidx WHERE id = old.rowid;
+    END;
+  `)
+}
+
+app({
+  name: "verba-createdb",
+  description: "Create a verba database",
+  flags: [
+    cli.flag({
+      name: "db",
+      type: "string",
+    }),
+  ],
+  action: func(ctx) {
+    if ctx.string("db") == "" {
+      print("Missing --db flag")
+      return
+    }
+    main(ctx.string("db"))
+  }
+}).run()

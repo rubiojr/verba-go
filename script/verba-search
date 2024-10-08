@@ -1,0 +1,55 @@
+#!/usr/bin/env -S rsx eval
+import sql
+import os
+import json
+import strings
+import rsx
+from cli import app, command as c
+
+func search(dbfile, q) {
+  if !rsx.is_file(dbfile) {
+    print('Database file "{dbfile}" does not exist')
+    return
+  }
+
+  db := sql.connect('sqlite://{dbfile}')
+  db.exec("PRAGMA foreign_keys=ON")
+  db.exec(`PRAGMA journal_mode=WAL`)
+  db.exec(`PRAGMA query_only=ON`)
+  db.query(
+    `SELECT t.id, t.programme_id, p.date, p.title, idx.content
+    FROM transcripts t
+    JOIN tidx idx ON (idx.rowid = t.id)
+    JOIN programmes p ON (p.id = t.programme_id)
+    WHERE idx.content MATCH ?
+    ORDER BY p.date ASC`,
+    q).each(func(row){
+    print(sprintf(">> %s <<\nid: %d, programme_id: %d, date: %s\n %s", row.title, row.id, row.programme_id, row.date.format(time.RFC822), row.content))
+  })
+}
+
+app({
+  name: "verba-search",
+  description: "Search conent from verba.civio.es",
+  args: true,
+  flags: [
+    cli.flag({
+      name: "db",
+      type: "string",
+    }),
+  ],
+  action: func(ctx) {
+    q := strings.join(ctx.args(), " ")
+
+    if ctx.string("db") == "" {
+      print("Missing --db flag")
+      return
+    }
+
+    if q == "" {
+      print("Missing search query")
+      return
+    }
+    search(ctx.string("db"), q)
+  }
+}).run()
