@@ -18,6 +18,8 @@ El contenido de los telediarios se obtiene de la web [Civio](https://verba.civio
 
 ## Verba scripts
 
+![screenshot](/docs/img/screenshot.png)
+
 Este proyecto incluye scripts para crear y actualizar la base de datos de telediarios.
 
 Para ejecutar los scripts necesitaras [Go](https://go.dev) instalado en tu sistema y [RSX](https://github.com/rubiojr/rsx) disponible en el `PATH`.

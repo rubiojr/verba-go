@@ -17,14 +17,14 @@ func search(dbfile, q) {
   db.exec(`PRAGMA journal_mode=WAL`)
   db.exec(`PRAGMA query_only=ON`)
   db.query(
-    `SELECT t.id, t.programme_id, p.date, p.title, idx.content
+    `SELECT t.id, t.programme_id, p.date, p.title, idx.content, t.link
     FROM transcripts t
     JOIN tidx idx ON (idx.rowid = t.id)
     JOIN programmes p ON (p.id = t.programme_id)
     WHERE idx.content MATCH ?
     ORDER BY p.date ASC`,
     q).each(func(row){
-    print(sprintf(">> %s <<\nid: %d, programme_id: %d, date: %s\n %s", row.title, row.id, row.programme_id, row.date.format(time.RFC822), row.content))
+    print(sprintf(">> %s <<\nid: %d, programme_id: %d, date: %s\nlink: %s\n%s", row.title, row.id, row.programme_id, row.date.format(time.RFC822), row.link, row.content))
   })
 }
 
