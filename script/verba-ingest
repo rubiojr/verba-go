@@ -1,4 +1,4 @@
-#!/usr/bin/env -S risor --
+#!/usr/bin/env -S rsx eval
 import sql
 import os
 import json

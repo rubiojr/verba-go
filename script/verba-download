@@ -1,4 +1,4 @@
-#!/usr/bin/env -S risor --modules lib --
+#!/usr/bin/env -S rsx eval
 /*
  * Download verba.civio.es RTVE transcripts
  */
