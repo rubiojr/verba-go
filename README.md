@@ -51,6 +51,13 @@ script/verba-search --db verba.db "sin animo de lucro"
 script/verba-sync --db verba.db
 ```
 
+## Creando una copia local de los transcripts en formato JSON
+
+```bash
+# crea una copia local de los transcripts en formato JSON
+script/verba-download --dir transcripts
+```
+
 ## Sintaxis de búsqueda
 
 La sintaxis de búsqueda es la misma que la de SQLite FTS5. Puedes encontrar más información en la [documentación oficial](https://www.sqlite.org/fts5.html#full_text_query_syntax).
