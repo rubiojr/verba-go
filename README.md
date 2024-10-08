@@ -22,8 +22,10 @@ Este proyecto incluye scripts para crear y actualizar la base de datos de teledi
 
 Para ejecutar los scripts necesitaras [Go](https://go.dev) instalado en tu sistema y [RSX](https://github.com/rubiojr/rsx) disponible en el `PATH`.
 
-```
+```bash
 go install --tags fts5 github.com/rubiojr/rsx@latest
+
+git clone https://github.com/rubiojr/verba-go
 ```
 
 > [!NOTE]
