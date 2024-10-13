@@ -1,0 +1,71 @@
+import verba
+from cli import app, command as c
+
+app({
+  name: "verba",
+  description: "verba cli tool",
+  version: "0.1.0",
+  usage: "verba <command> [options]",
+  flags: [
+    cli.flag({
+      name: "db",
+      type: "string",
+    }),
+  ],
+  commands: [
+    cli.command({
+      description: "Search the database",
+      name: "search",
+      flags: [
+        cli.flag({
+          name: "query",
+          type: "string",
+          required: true,
+        }),
+      ],
+      action: func(ctx) {
+        if ctx.string("db") == "" {
+          print("Missing --db flag")
+          return
+        }
+        verba.search(ctx.string("db"), ctx.string("query"))
+      }
+    }),
+    cli.command({
+      description: "Store programmes as markdown files",
+      name: "download",
+      flags: [
+        cli.flag({
+          name: "dir",
+          type: "string",
+          value: filepath.join(getenv("HOME"), "Documents/civio/verba"),
+        }),
+      ],
+      action: func(ctx) {
+        verba.download(ctx.string("dir"))
+      }
+    }),
+    cli.command({
+      description: "Sync with verba.civio.es",
+      name: "sync",
+      action: func(ctx) {
+        if ctx.string("db") == "" {
+          print("Missing --db flag")
+          return
+        }
+        verba.sync(ctx.string("db"))
+      }
+    }),
+    cli.command({
+      description: "Create a verba database",
+      name: "createdb",
+      action: func(ctx) {
+        if ctx.string("db") == "" {
+          print("Missing --db flag")
+          return
+        }
+        verba.create_db(ctx.string("db"))
+      }
+    }),
+  ],
+}).run()

@@ -16,18 +16,19 @@ El contenido de los telediarios se obtiene de la web [Civio](https://verba.civio
 - [Go](https://go.dev)
 - [RSX](https://github.com/rubiojr/rsx)
 
-## Verba scripts
+## Verba CLI
 
 ![screenshot](/docs/img/screenshot.png)
 
-Este proyecto incluye scripts para crear y actualizar la base de datos de telediarios.
+Este proyecto incluye una CLI para crear y actualizar la base de datos de telediarios.
 
-Para ejecutar los scripts necesitaras [Go](https://go.dev) instalado en tu sistema y [RSX](https://github.com/rubiojr/rsx) disponible en el `PATH`.
+Para compilar el binario necesitaras [Go](https://go.dev) instalado en tu sistema y [RSX](https://github.com/rubiojr/rsx) disponible en el `PATH`.
 
 ```bash
 go install --tags fts5 github.com/rubiojr/rsx@latest
 
 git clone https://github.com/rubiojr/verba-go
+rsx build -o verba
 ```
 
 > [!NOTE]
@@ -37,27 +38,24 @@ git clone https://github.com/rubiojr/verba-go
 
 ```bash
 # crea la base de datos SQLite
-script/verba-createdb --db verba.db
-
-# indexa los telediarios
-script/verba-sync --db verba.db
+./verba --db verba.db createdb
 
 # busca en los telediarios
-script/verba-search --db verba.db "sin animo de lucro"
+./verba --db verba.db search --query "sin animo de lucro"
 ```
 
 ## Actualizando la base de datos
 
 ```bash
 # actualiza los telediarios
-script/verba-sync --db verba.db
+./verba --db verba.db sync
 ```
 
 ## Creando una copia local de los transcripts en formato JSON
 
 ```bash
 # crea una copia local de los transcripts en formato JSON
-script/verba-download --dir transcripts
+./verba --dir transcripts download
 ```
 
 ## Sintaxis de búsqueda
