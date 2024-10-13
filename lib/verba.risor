@@ -1,6 +1,7 @@
 import sql
 import rsx
 import json
+import sched
 
 /*
  * verba.civio.es client library.
@@ -217,10 +218,18 @@ func last10(dbfile) {
   })
 }
 
-func serve(dbfile) {
+func serve(addr, dbfile, sync) {
   if !rsx.is_file(dbfile) {
     print('Database file "{dbfile}" does not exist')
     return
+  }
+
+  if sync {
+    print('Syncing enabled')
+    sched.every(21600, func() {
+    print('Syncing database...')
+    sync(dbfile)
+    })
   }
 
   http.handle("/api/", func(w, r) {
@@ -275,5 +284,5 @@ func serve(dbfile) {
   http.handle("/api/fetchProgrammeTranscription", func(w, r) {
   })
 
-  http.listen_and_serve(":9900")
+  http.listen_and_serve(addr)
 }

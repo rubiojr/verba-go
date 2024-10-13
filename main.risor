@@ -81,8 +81,20 @@ app({
     cli.command({
       description: "API server",
       name: "serve",
+      flags: [
+        cli.flag({
+          name: "addr",
+          type: "string",
+          value: ":9900",
+        }),
+        cli.flag({
+          name: "sync",
+          type: "bool",
+          value: false,
+        }),
+      ],
       action: func(ctx) {
-        verba.serve(ctx.string("db"))
+        verba.serve(ctx.string("addr"), ctx.string("db"), ctx.bool("sync"))
       }
     }),
   ],
