@@ -67,5 +67,16 @@ app({
         verba.create_db(ctx.string("db"))
       }
     }),
+    cli.command({
+      description: "List last 10 programmes",
+      name: "last10",
+      action: func(ctx) {
+        if ctx.string("db") == "" {
+          print("Missing --db flag")
+          return
+        }
+        verba.last10(ctx.string("db"))
+      }
+    }),
   ],
 }).run()

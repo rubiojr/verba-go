@@ -174,3 +174,22 @@ func download(basedir) {
   })
   print('Downloaded {count} transcripts.')
 }
+
+func last10(dbfile) {
+  if !rsx.is_file(dbfile) {
+    print('Database file "{dbfile}" does not exist')
+    return
+  }
+
+  db := sql.connect('sqlite://{dbfile}')
+  db.exec("PRAGMA foreign_keys=ON")
+  db.exec(`PRAGMA journal_mode=WAL`)
+  db.exec(`PRAGMA query_only=ON`)
+  db.query(
+    `SELECT *
+    FROM programmes
+    ORDER BY date DESC
+    LIMIT 10`).each(func(row){
+      print('{row.title} {row.date.format(time.RFC822)}')
+  })
+}
