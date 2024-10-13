@@ -78,5 +78,12 @@ app({
         verba.last10(ctx.string("db"))
       }
     }),
+    cli.command({
+      description: "API server",
+      name: "serve",
+      action: func(ctx) {
+        verba.serve(ctx.string("db"))
+      }
+    }),
   ],
 }).run()
