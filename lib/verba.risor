@@ -236,6 +236,14 @@ func serve(addr, dbfile, enable_sync, interval) {
     })
   }
 
+  http.handle("/", func(w, r) {
+    return "Hello, Darkness https://youtu.be/_T2X7z1Akiw"
+  })
+
+  http.handle("/api", func(w, r) {
+    return json.marshal({ name: 'Verba Volant API', version: '1.0' })
+  })
+
   http.handle("/api/", func(w, r) {
     return json.marshal({ name: 'Verba Volant API', version: '1.0' })
   })
