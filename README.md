@@ -7,9 +7,9 @@ Este proyecto pretende ser un buscador de telediarios de RTVE y una re-implement
 
 El objetivo es mantener la compatibilidad con la API original y añadir nuevas funcionalidades.
 
-Por ahora, el proyecto es un trabajo en progreso y el API server no se ha publicado todavía.
+Por ahora, el proyecto es un trabajo en progreso y la implementacion del API de Verba es parcial, disponible en https://verba.rbel.co/api.
 
-El contenido de los telediarios se obtiene de la web [Civio](https://verba.civio.es) y se almacena en una base de datos SQLite.
+El contenido de los telediarios se obtiene de la API de [Verba](https://verba.civio.es) diariamente y se almacena en una base de datos SQLite.
 
 ## Requisitos
 
