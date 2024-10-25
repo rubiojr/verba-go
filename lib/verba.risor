@@ -242,16 +242,16 @@ func serve(addr, dbfile, enable_sync, interval) {
 
   http.handle("/api/search/{q}", func(w, r) {
     q := r.path_value("q")
-    if q == "" {
-      return 400
+    if q == nil {
+      return w.write_header(400)
     }
     search(dbfile, q)
   })
 
   http.handle("/api/search", func(w, r) {
     q := r.query.get("q")
-    if q == "" {
-      return 400
+    if q == nil {
+      return w.write_header(400)
     }
     rows := []
     search_each(dbfile, q, func(row){
@@ -273,14 +273,17 @@ func serve(addr, dbfile, enable_sync, interval) {
 
   http.handle("/api/search.csv", func(w, r) {
     q := r.query.get("q")
-    if q == "" {
-      return 400
+    if q == nil {
+      return w.write_header(400)
     }
     search(dbfile, q)
   })
 
   http.handle("/api/fetchContext", func(w, r) {
     programme_id := r.query.get("programme_id")
+    if programme_id == nil {
+      return w.write_header(400)
+    }
   })
 
   http.handle("/api/fetchProgrammeList", func(w, r) {
@@ -294,7 +297,7 @@ func serve(addr, dbfile, enable_sync, interval) {
 
       rows.append({
         "id": string(row.id),
-        "date": row.date.format(time.RFC3339),
+        "date": row.date.format("2006-01-02"),
         "title": row.title,
       })
     })
@@ -302,6 +305,34 @@ func serve(addr, dbfile, enable_sync, interval) {
   })
 
   http.handle("/api/fetchProgrammeTranscription", func(w, r) {
+    programme_id := r.query.get("programme_id")
+    if programme_id == nil {
+      return w.write_header(400)
+    }
+    rows := []
+    db := _db(dbfile)
+    db.exec("PRAGMA query_only=ON")
+    db.query(
+      `SELECT t.*, p.*
+      FROM transcripts t
+      JOIN programmes p ON (p.id = t.programme_id)
+      WHERE programme_id = ?
+      ORDER BY date DESC`, programme_id).each(func(row){
+
+      rows.append({
+        "id": string(row.transcript_id),
+        "link": row.link,
+        "content": row.content,
+        "time_start": row.time_start,
+        "time_end": row.time_end,
+        "entities": [], # TODO
+        "programme": {
+          "id": string(row.programme_id),
+          "date": row.date.format("2006-01-02"),
+          "title": row.title,}
+      })
+    })
+    return json.marshal(rows)
   })
 
   http.listen_and_serve(addr)
