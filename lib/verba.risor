@@ -223,6 +223,13 @@ func last10(dbfile) {
   })
 }
 
+func _handle(path, fn) {
+  http.handle(path, func(w, r) {
+    print('{time.now().format("2006-01-02 03:04")} {r}')
+    return fn(w, r)
+  })
+}
+
 func serve(addr, dbfile, enable_sync, interval) {
   if !rsx.is_file(dbfile) {
     print('Database file "{dbfile}" does not exist')
@@ -236,19 +243,19 @@ func serve(addr, dbfile, enable_sync, interval) {
     })
   }
 
-  http.handle("/", func(w, r) {
+  _handle("/", func(w, r) {
     return "Hello, Darkness https://youtu.be/_T2X7z1Akiw"
   })
 
-  http.handle("/api", func(w, r) {
+  _handle("/api", func(w, r) {
     return json.marshal({ name: 'Verba Volant API', version: '1.0' })
   })
 
-  http.handle("/api/", func(w, r) {
+  _handle("/api/", func(w, r) {
     return json.marshal({ name: 'Verba Volant API', version: '1.0' })
   })
 
-  http.handle("/api/search/{q}", func(w, r) {
+  _handle("/api/search/{q}", func(w, r) {
     q := r.path_value("q")
     if q == nil {
       return w.write_header(400)
@@ -256,7 +263,7 @@ func serve(addr, dbfile, enable_sync, interval) {
     search(dbfile, q)
   })
 
-  http.handle("/api/search", func(w, r) {
+  _handle("/api/search", func(w, r) {
     q := r.query.get("q")
     if q == nil {
       return w.write_header(400)
@@ -279,7 +286,7 @@ func serve(addr, dbfile, enable_sync, interval) {
     return json.marshal(res)
   })
 
-  http.handle("/api/search.csv", func(w, r) {
+  _handle("/api/search.csv", func(w, r) {
     q := r.query.get("q")
     if q == nil {
       return w.write_header(400)
