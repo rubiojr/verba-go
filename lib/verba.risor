@@ -2,6 +2,7 @@ import sql
 import rsx
 import json
 import sched
+import errors
 
 /*
  * verba.civio.es client library.
@@ -11,6 +12,16 @@ const _VERBA_URL = "https://verba.civio.es/api"
 
 func _get(path, opts) {
   return fetch(_VERBA_URL + path, opts)
+}
+
+func _db(dbfile) {
+  db := sql.connect('sqlite://{dbfile}')
+  db.exec("PRAGMA foreign_keys=ON")
+  db.exec("PRAGMA journal_mode=WAL")
+  db.exec("PRAGMA busy_timeout=5000")
+  db.exec("PRAGMA synchronous=NORMAL")
+
+  return db
 }
 
 func programmes() {
@@ -32,9 +43,7 @@ func transcription(programme_id) {
 }
 
 func create_db(dbfile) {
-  db := sql.connect('sqlite://{dbfile}')
-  db.exec("PRAGMA foreign_keys=ON")
-  db.exec(`PRAGMA journal_mode=WAL`)
+  db := _db(dbfile)
   db.exec(`
     CREATE TABLE IF NOT EXISTS programmes (
       id INTEGER PRIMARY KEY,
@@ -79,14 +88,12 @@ func create_db(dbfile) {
 }
 
 func sync(dbfile) {
+  print('Syncing database now...')
   if !rsx.is_file(dbfile) {
-    print('Database file "{dbfile}" does not exist')
-    return
+    return errors.new('Database file "{dbfile}" does not exist')
   }
 
-  db := sql.connect('sqlite://'+dbfile)
-  db.exec("PRAGMA foreign_keys=ON")
-  db.exec(`PRAGMA journal_mode=WAL`)
+  db := _db(dbfile)
 
   programmes := programmes()
   count := 0
@@ -101,11 +108,15 @@ func sync(dbfile) {
 
       print('Syncing transcriptions...')
       transcription := transcription(p.id)
+      rsx.debug('Transcriptions: {len(transcription)}')
       transcription.each(func(t) {
-        db.exec(
+        rsx.debug('Syncing transcription {t.id}...')
+        try(func(){
+          db.exec(
           `INSERT INTO transcripts (transcript_id, content, programme_id, link, time_start, time_end) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(transcript_id) DO UPDATE SET content=content`,
-          t.id, t.content, int(t.programme.id), t.link, t.time_start, t.time_end,
-        )
+          t.id, t.content, int(t.programme.id), t.link, t.time_start, t.time_end)
+          rsx.debug('Transcription {t.id} synced')
+        }, func(e) {print(e)})
       })
 
       db.exec(
@@ -127,10 +138,8 @@ func search_each(dbfile, q, fn) {
     return
   }
 
-  db := sql.connect('sqlite://{dbfile}')
-  db.exec("PRAGMA foreign_keys=ON")
-  db.exec(`PRAGMA journal_mode=WAL`)
-  db.exec(`PRAGMA query_only=ON`)
+  db := _db(dbfile)
+  db.exec("PRAGMA query_only=ON")
   db.query(
     `SELECT t.id, t.programme_id, p.date, p.title, idx.content, t.link, t.time_start, t.time_end
     FROM transcripts t
@@ -149,10 +158,8 @@ func search(dbfile, q) {
     return
   }
 
-  db := sql.connect('sqlite://{dbfile}')
-  db.exec("PRAGMA foreign_keys=ON")
-  db.exec(`PRAGMA journal_mode=WAL`)
-  db.exec(`PRAGMA query_only=ON`)
+  db := _db(dbfile)
+  db.exec("PRAGMA query_only=ON")
   db.query(
     `SELECT t.id, t.programme_id, p.date, p.title, idx.content, t.link
     FROM transcripts t
@@ -205,9 +212,7 @@ func last10(dbfile) {
     return
   }
 
-  db := sql.connect('sqlite://{dbfile}')
-  db.exec("PRAGMA foreign_keys=ON")
-  db.exec(`PRAGMA journal_mode=WAL`)
+  db := _db(dbfile)
   db.exec(`PRAGMA query_only=ON`)
   db.query(
     `SELECT *
@@ -218,17 +223,16 @@ func last10(dbfile) {
   })
 }
 
-func serve(addr, dbfile, sync) {
+func serve(addr, dbfile, enable_sync, interval) {
   if !rsx.is_file(dbfile) {
     print('Database file "{dbfile}" does not exist')
     return
   }
 
-  if sync {
-    print('Syncing enabled')
-    sched.every(21600, func() {
-    print('Syncing database...')
-    sync(dbfile)
+  if enable_sync {
+    print('Syncing enabled every {interval}')
+    sched.every(interval, func() {
+      sync(dbfile)
     })
   }
 

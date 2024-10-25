@@ -1,5 +1,6 @@
 import verba
 from cli import app, command as c
+import sched
 
 app({
   name: "verba",
@@ -92,9 +93,16 @@ app({
           type: "bool",
           value: false,
         }),
+        cli.flag({
+          name: "sync-interval",
+          type: "string",
+          value: "12h",
+        }),
       ],
       action: func(ctx) {
-        verba.serve(ctx.string("addr"), ctx.string("db"), ctx.bool("sync"))
+        db := ctx.string("db")
+        interval := ctx.string("sync-interval")
+        verba.serve(ctx.string("addr"), db, ctx.bool("sync"), interval)
       }
     }),
   ],
