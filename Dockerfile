@@ -24,6 +24,7 @@ WORKDIR /tmp
 COPY --from=build /usr/local/bin/app /usr/local/bin/app
 
 VOLUME /data
+EXPOSE 9900
 
 RUN mkdir -p /data/db
 RUN /usr/local/bin/app --db /data/db/verba.db createdb
