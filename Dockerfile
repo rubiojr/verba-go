@@ -23,7 +23,7 @@ FROM alpine:latest
 WORKDIR /tmp
 COPY --from=build /usr/local/bin/app /usr/local/bin/app
 
-VOLUME data
+VOLUME /data
 
 RUN mkdir -p /data/db
 RUN /usr/local/bin/app --db /data/db/verba.db createdb

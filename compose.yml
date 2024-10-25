@@ -1,0 +1,10 @@
+services:
+  verba:
+    image: verba
+    container_name: verba
+    restart: unless-stopped
+    build: ./verba
+    volumes:
+      - /docker/verba/data:/data
+    ports:
+      9900:9900
