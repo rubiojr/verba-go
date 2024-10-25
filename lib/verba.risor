@@ -280,9 +280,25 @@ func serve(addr, dbfile, enable_sync, interval) {
   })
 
   http.handle("/api/fetchContext", func(w, r) {
+    programme_id := r.query.get("programme_id")
   })
 
   http.handle("/api/fetchProgrammeList", func(w, r) {
+    rows := []
+    db := _db(dbfile)
+    db.exec("PRAGMA query_only=ON")
+    db.query(
+      `SELECT *
+      FROM programmes
+      ORDER BY date DESC`).each(func(row){
+
+      rows.append({
+        "id": string(row.id),
+        "date": row.date.format(time.RFC3339),
+        "title": row.title,
+      })
+    })
+    return json.marshal(rows)
   })
 
   http.handle("/api/fetchProgrammeTranscription", func(w, r) {
