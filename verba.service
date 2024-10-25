@@ -1,0 +1,12 @@
+[Unit]
+Description=verba.civio.es replica
+
+[Service]
+WorkingDirectory=%h/services/verba
+ExecStartPre=./bin/verba --db db/verba.db createdb
+ExecStart=./bin/verba --db db/verba.db serve --sync
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+
