@@ -27,6 +27,8 @@ docker run -p 9900:9900 verba-go
 
 El API server estará disponible en `http://localhost:9900`. La copia de los transcripts se sincroniza automaticamente cada 12 horas desde verba.civio.es.
 
+La documentación de la API esta disponible en [docs/API.md](/docs/API.md).
+
 ## Verba CLI
 
 Este proyecto incluye una CLI para crear y actualizar la base de datos de telediarios.
